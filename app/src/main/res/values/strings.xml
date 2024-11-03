@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">GhibliExplorer</string>
+    <string name="retry">Retry</string>
+    <string name="loading">Loading</string>
+    <string name="film_photo">film photo</string>
+    <string name="loading_failed">Failed to load</string>
+    <string name="peliculas">Películas</string>
 </resources>
