@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.ghibliexplorer.GhibliExplorerScreen
 import com.example.ghibliexplorer.data.Film
 import com.example.ghibliexplorer.ui.screens.viewmodel.FilmsUiState
 import com.example.ghibliexplorer.R
@@ -144,7 +145,7 @@ fun FilmsGridScreen(
                     modifier = modifier
                         .padding(4.dp)
                         .fillMaxWidth()
-                        //.clickable { navController.navigate(GhibliExplorerScreen.FilmDetail.name + "/${film.id}") }
+                        .clickable { navController.navigate(GhibliExplorerScreen.FilmDetail.name + "/${film.id}") }
                 )
             }
         }
