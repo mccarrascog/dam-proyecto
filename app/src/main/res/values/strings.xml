@@ -5,4 +5,6 @@
     <string name="film_photo">film photo</string>
     <string name="loading_failed">Failed to load</string>
     <string name="peliculas">Películas</string>
+    <string name="favoritas">Favoritas</string>
+    <string name="detalle_pelicula">Detalle Película</string>
 </resources>
