@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
  * Entity data class represents a single row in the database.
  */
 
-@Entity(tableName = "favouriteFilms")
+@Entity(tableName = "films")
 @Serializable
 data class Film(
     @PrimaryKey(autoGenerate = false)
@@ -27,5 +27,5 @@ data class Film(
     var imageLink: String?,
     val description: String?,
     val director: String?,
-    val producer: String?
+    val producer: String?,
 )

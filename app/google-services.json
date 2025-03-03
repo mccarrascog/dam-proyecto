@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1063728933319",
+    "project_id": "ghibliexplorer",
+    "storage_bucket": "ghibliexplorer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1063728933319:android:96a5cd815cad5eaf2851e2",
+        "android_client_info": {
+          "package_name": "com.example.ghibliexplorer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBxKo62dpuv0wOlS_gGBezUU4xgWwJLis"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

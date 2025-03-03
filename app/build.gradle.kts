@@ -1,10 +1,13 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "1.8.21-1.0.11"
     kotlin("plugin.serialization")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -63,7 +66,6 @@ android {
 
 dependencies {
     // Import the Compose BOM
-    implementation("com.google.android.gms:play-services-maps:17.0.1")
     implementation(platform("androidx.compose:compose-bom:2023.06.01"))
     implementation("androidx.activity:activity-compose:1.7.2")
     implementation("androidx.compose.material3:material3")
@@ -95,4 +97,9 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
+    // Base de datos en Firestore (opcional, si quieres guardar más datos del usuario)
+    implementation("com.google.firebase:firebase-firestore")
 }

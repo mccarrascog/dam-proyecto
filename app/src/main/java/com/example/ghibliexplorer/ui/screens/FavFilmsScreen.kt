@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
-package com.example.ghibliexplorer.ui
+package com.example.ghibliexplorer.ui.screens
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,6 +14,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -34,7 +35,8 @@ fun FavFilmsScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(it)
         ) {
-            val favsViewModel: FavsViewModel = viewModel(factory = FavsViewModel.Factory)
+            val context = LocalContext.current
+            val favsViewModel: FavsViewModel = viewModel(factory = FavsViewModel.provideFactory(context))
             FavsScreen(
                 favFilmsUiState = favsViewModel.favFilmsUiState,
                 retryAction = { favsViewModel.getFavFilms() },

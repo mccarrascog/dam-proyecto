@@ -7,4 +7,11 @@
     <string name="peliculas">Películas</string>
     <string name="favoritas">Favoritas</string>
     <string name="detalle_pelicula">Detalle Película</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="resenias">Reseñas</string>
+    <string name="aniadir_resenia">Añadir Reseña</string>
+    <string name="administracion">Administración</string>
+    <string name="administrar_users">Administrar Users</string>
+    <string name="administrar_resenias">Administrar Reseñas</string>
 </resources>

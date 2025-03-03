@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,14 +28,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.ghibliexplorer.GhibliExplorerScreen
 import com.example.ghibliexplorer.R
 import com.example.ghibliexplorer.data.Film
 
 @Composable
 fun FilmDetailScreen(
     film: Film,
+    navController: NavController,
     onAddFavouritesButtonClicked: () -> Unit,
     onRemoveFromFavsButtonClicked: () -> Unit,
     isFilmInFavs: Boolean,
@@ -133,6 +137,24 @@ fun FilmDetailScreen(
                                 contentDescription = null,
                             )
                         }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = { navController.navigate("${GhibliExplorerScreen.Reviews.name}/${film.id}") },
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                        ) {
+                            Text("Ver reseñas")
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = { navController.navigate("${GhibliExplorerScreen.AddReview.name}/${film.id}") },
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                        ) {
+                            Text("Añadir reseña")
+                        }
                     }
                 }
             }
@@ -218,6 +240,27 @@ fun FilmDetailScreen(
                             painter = painterResource(id = if (isFilmInFavs) R.drawable.nofav__1_ else R.drawable.favorito),
                             contentDescription = null,
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = {
+                            // Navegar a la pantalla de reseñas con el filmId
+                            navController.navigate("${GhibliExplorerScreen.Reviews.name}/${film.id}")
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                    ) {
+                        Text("Ver reseñas")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = { navController.navigate("${GhibliExplorerScreen.AddReview.name}/${film.id}") },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                    ) {
+                        Text("Añadir reseña")
                     }
                 }
             }

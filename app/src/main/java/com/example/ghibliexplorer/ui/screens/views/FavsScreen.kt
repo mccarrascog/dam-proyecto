@@ -18,11 +18,16 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -115,50 +120,81 @@ fun FavFilmsGridScreen(
     films: Flow<List<Film>>,
     modifier: Modifier = Modifier,
     navController: NavController
-){
-    // Recolectar el flujo y convertirlo en un estado observable
+) {
+    var searchText by remember { mutableStateOf("") }
     val filmsState by films.collectAsState(initial = emptyList())
-    if(filmsState.isEmpty()) {
+
+    if (filmsState.isEmpty()) {
         Box(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(id= R.drawable.logoghibli2__3_),
+                painter = painterResource(id = R.drawable.logoghibli2__3_),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
             Column {
-                Text(text = "NO FAVOURITES YET",
-                    style = MaterialTheme.typography.displayLarge)
+                Text(
+                    text = "NO FAVOURITES YET",
+                    style = MaterialTheme.typography.displayLarge,
+                )
             }
         }
     } else {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ){
-            Image(
-                painter = painterResource(id= R.drawable.logoghibli2__3_),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+        val filteredFilms = filmsState.filter { film ->
+            film.title?.contains(searchText, ignoreCase = true) == true
+        }
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Barra de búsqueda (solo aparece si hay películas favoritas)
+            TextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                placeholder = { Text("Search for a film...") },
+                singleLine = true
             )
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(150.dp),
-                contentPadding = PaddingValues(4.dp),
-                modifier = modifier.fillMaxWidth()
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                items(items = filmsState, key = { film -> film.id }) { film ->
-                    FavFilmCard(
-                        film = film,
-                        modifier = modifier
-                            .padding(4.dp)
-                            .fillMaxWidth()
-                            .clickable { navController.navigate(GhibliExplorerScreen.FilmDetail.name + "/${film.id}") }
+                Image(
+                    painter = painterResource(id = R.drawable.logoghibli2__3_),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                if (filteredFilms.isEmpty()) {
+                    Text(
+                        text = "Oops! No results found :(",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.Black,
+                        modifier = Modifier.align(Alignment.Center)
                     )
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(150.dp),
+                        contentPadding = PaddingValues(4.dp),
+                        modifier = modifier.fillMaxWidth()
+                    ) {
+                        items(items = filteredFilms, key = { film -> film.id }) { film ->
+                            FavFilmCard(
+                                film = film,
+                                modifier = modifier
+                                    .padding(4.dp)
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        navController.navigate(GhibliExplorerScreen.FilmDetail.name + "/${film.id}")
+                                    }
+                            )
+                        }
+                    }
                 }
             }
         }

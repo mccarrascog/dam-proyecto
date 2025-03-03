@@ -9,10 +9,17 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -120,33 +127,65 @@ fun FilmCard(film: Film, modifier: Modifier = Modifier){
 
 @Composable
 fun FilmsGridScreen(
-    films:List<Film>,
+    films: List<Film>,
     modifier: Modifier = Modifier,
     navController: NavController
-){
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ){
-        Image(
-            painter = painterResource(id=R.drawable.logoghibli2__3_),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+) {
+    var searchText by remember { mutableStateOf("") }
+
+    val filteredFilms = films.filter { film ->
+        film.title?.contains(searchText, ignoreCase = true) == true
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        TextField(
+            value = searchText,
+            onValueChange = { searchText = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            placeholder = { Text("Search for movies...") },
+            singleLine = true
         )
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(150.dp),
-            contentPadding = PaddingValues(4.dp),
-            modifier = modifier.fillMaxWidth()
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            items(items = films, key = { film -> film.id }) { film ->
-                FilmCard(
-                    film = film,
-                    modifier = modifier
-                        .padding(4.dp)
-                        .fillMaxWidth()
-                        .clickable { navController.navigate(GhibliExplorerScreen.FilmDetail.name + "/${film.id}") }
+            Image(
+                painter = painterResource(id = R.drawable.logoghibli2__3_),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            if (filteredFilms.isEmpty()) {
+                Text(
+                    text = "Oops! No results found :(",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.Black,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.Center)
                 )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(150.dp),
+                    contentPadding = PaddingValues(4.dp),
+                    modifier = modifier.fillMaxWidth()
+                ) {
+                    items(items = filteredFilms, key = { film -> film.id }) { film ->
+                        FilmCard(
+                            film = film,
+                            modifier = modifier
+                                .padding(4.dp)
+                                .fillMaxWidth()
+                                .clickable {
+                                    navController.navigate(GhibliExplorerScreen.FilmDetail.name + "/${film.id}")
+                                }
+                        )
+                    }
+                }
             }
         }
     }
