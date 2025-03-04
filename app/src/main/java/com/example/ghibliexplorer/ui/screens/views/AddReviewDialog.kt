@@ -28,7 +28,7 @@ fun AddReviewDialog(
 
     // Obtener la reseña del usuario si existe en el ViewModel
     LaunchedEffect(film.id) {
-        viewModel.getReviewsForFilm(film.id)
+        viewModel.loadReviews(film.id)
     }
 
     // Recuperar la reseña existente (si la hay) desde el ViewModel

@@ -17,6 +17,7 @@ interface OnlineReviewsRepository {
     suspend fun deleteReview(review: Review)
     suspend fun editReview(review: Review)
     suspend fun getReviewAndAuthorForFilm(filmId: String, author: String): Review?
+    suspend fun getReviewsForAllFilms(): List<Review>
 }
 
 class FirebaseReviewRepository(private val firebaseService: FirebaseService) : OnlineReviewsRepository {
@@ -43,5 +44,10 @@ class FirebaseReviewRepository(private val firebaseService: FirebaseService) : O
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getReviewAndAuthorForFilm(filmId: String, author: String): Review? {
         return firebaseService.getReviewAndAuthorForFilm(filmId, author)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override suspend fun getReviewsForAllFilms(): List<Review> {
+        return firebaseService.getReviewsForAllFilms()
     }
 }

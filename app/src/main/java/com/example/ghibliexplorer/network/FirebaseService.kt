@@ -128,4 +128,29 @@ class FirebaseService {
             null // En caso de error, no mostramos la opción de admin
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun getReviewsForAllFilms(): List<Review> {
+        val reviewsCollection = db.collection("reviews")
+        val querySnapshot = reviewsCollection.get().await()
+
+        return querySnapshot.documents.map { document ->
+            val comment = document.getString("comment") ?: ""
+            val rating = (document.getDouble("rating") ?: 0.0).toFloat()
+            val author = document.getString("author") ?: "Unknown"
+            val date = document.getDate("date")?.toInstant()?.toEpochMilli()
+                ?: System.currentTimeMillis()
+            val filmIdFromFirestore = document.getString("filmId") ?: ""
+            val reviewId = document.id
+
+            Review(
+                id = reviewId,
+                comment = comment,
+                rating = rating,
+                author = author,
+                date = Date(date),
+                filmId = filmIdFromFirestore
+            )
+        }
+    }
 }

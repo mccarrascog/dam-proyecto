@@ -9,12 +9,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ghibliexplorer.GhibliExplorerApplication
-import com.example.ghibliexplorer.data.FavouriteFilm
 import com.example.ghibliexplorer.data.Film
 import com.example.ghibliexplorer.data.offline.OfflineFilmsRepository
-import com.example.ghibliexplorer.data.offline.OfflineUsersRepository
 import com.example.ghibliexplorer.data.online.OnlineFilmsRepository
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -24,13 +21,22 @@ sealed interface FilmsUiState {
     object Loading : FilmsUiState
 }
 
+sealed interface AdminFilmsUiState {
+    data class Success(val films: List<Film>) : AdminFilmsUiState
+    object Error : AdminFilmsUiState
+    object Loading : AdminFilmsUiState
+}
+
 class FilmsViewModel(
     private val onlineFilmsRepository: OnlineFilmsRepository,
     private val offlineFilmsRepository: OfflineFilmsRepository,
-    private val offlineUsersRepository: OfflineUsersRepository
 ) : ViewModel() {
 
     var filmsUiState: FilmsUiState by mutableStateOf(FilmsUiState.Loading)
+        private set
+
+    // Estado específico para las películas en la sección de admin
+    var adminFilmsUiState: AdminFilmsUiState by mutableStateOf(AdminFilmsUiState.Loading)
         private set
 
     var selectedFilm: Film? by mutableStateOf(null)
@@ -47,49 +53,46 @@ class FilmsViewModel(
         viewModelScope.launch {
             try {
                 Log.e("FilmsViewModel", "Iniciando la obtención de películas...")
-                filmsUiState = FilmsUiState.Loading
+
+                // Actualiza ambos estados a 'Loading'
+                updateFilmsStates(FilmsUiState.Loading, AdminFilmsUiState.Loading)
                 Log.e("FilmsViewModel", "Cargando películas...")
 
-                val email = userEmail
-                if (email != null) {
-                    val loggedUser = offlineUsersRepository.getUserByEmail(email)
+                // Obtener las películas de la API
+                val filmsFromApi = onlineFilmsRepository.getFilms()
 
-                    if (loggedUser != null) {
-                        val userId = loggedUser.id
+                Log.e("FilmsViewModel", "Películas obtenidas de la API: ${filmsFromApi.size}")
 
-                        // Obtener las películas de la API
-                        val filmsFromApi = onlineFilmsRepository.getFilms()
-
-                        Log.e("FilmsViewModel", "Películas obtenidas de la API: ${filmsFromApi.size}")
-
-                        if (filmsFromApi.isNotEmpty()) {
-                            // Guardar las películas en la base de datos de films
-                            filmsFromApi.forEach { film ->
-                                if (!offlineFilmsRepository.isFilmInDatabase(film.id)) {
-                                    offlineFilmsRepository.insertFilm(film)
-                                }
-                            }
-
-                            // Actualizar el estado de éxito
-                            filmsUiState = FilmsUiState.Success(filmsFromApi)
-                        } else {
-                            // Si la API no retorna películas
-                            filmsUiState = FilmsUiState.Error
-                            Log.e("FilmsViewModel", "La API no retornó películas.")
+                if (filmsFromApi.isNotEmpty()) {
+                    // Guardar las películas en la base de datos de films
+                    filmsFromApi.forEach { film ->
+                        if (!offlineFilmsRepository.isFilmInDatabase(film.id)) {
+                            offlineFilmsRepository.insertFilm(film)
                         }
-                    } else {
-                        filmsUiState = FilmsUiState.Error
-                        Log.e("FilmsViewModel", "Usuario no encontrado para el email: $email")
                     }
+
+                    // Actualizar ambos estados con el resultado de la API
+                    updateFilmsStates(
+                        FilmsUiState.Success(filmsFromApi),
+                        AdminFilmsUiState.Success(filmsFromApi)
+                    )
                 } else {
-                    filmsUiState = FilmsUiState.Error
-                    Log.e("FilmsViewModel", "No se pudo obtener el email.")
+                    // Si la API no retorna películas
+                    updateFilmsStates(FilmsUiState.Error, AdminFilmsUiState.Error)
+                    Log.e("FilmsViewModel", "La API no retornó películas.")
                 }
+
             } catch (e: IOException) {
-                filmsUiState = FilmsUiState.Error
+                updateFilmsStates(FilmsUiState.Error, AdminFilmsUiState.Error)
                 Log.e("FilmsViewModel", "Error obteniendo las películas de la API", e)
             }
         }
+    }
+
+    // Función para actualizar ambos estados a la vez
+    private fun updateFilmsStates(filmsState: FilmsUiState, adminFilmsState: AdminFilmsUiState) {
+        filmsUiState = filmsState
+        adminFilmsUiState = adminFilmsState
     }
 
     fun getFilmById(filmId: String) {
@@ -110,16 +113,14 @@ class FilmsViewModel(
                 val application = (this[APPLICATION_KEY] as GhibliExplorerApplication)
 
                 // Obtener el repositorio de películas online
-                val onlineFilmsRepository = application.container.OnlineFilmsRepository
+                val onlineFilmsRepository = application.container.onlineFilmsRepository
 
                 // Obtener el repositorio de películas offline
                 val offlineFilmsRepository = application.offlineAppContainer.OfflineFilmsRepository
-                val offlineUsersRepository = application.offlineAppContainer.OfflineUsersRepository
 
                 FilmsViewModel(
                     onlineFilmsRepository = onlineFilmsRepository,
                     offlineFilmsRepository = offlineFilmsRepository,
-                    offlineUsersRepository = offlineUsersRepository
                 )
             }
         }

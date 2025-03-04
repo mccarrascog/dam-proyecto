@@ -1,6 +1,7 @@
 package com.example.ghibliexplorer.data.online
 
 import com.example.ghibliexplorer.network.FilmApiService
+import com.example.ghibliexplorer.network.FirebaseService
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -18,14 +19,16 @@ import retrofit2.Retrofit
  */
 
 interface OnlineAppContainer{
-    val OnlineFilmsRepository : OnlineFilmsRepository
+    val onlineFilmsRepository : OnlineFilmsRepository
+    val onlineReviewsRepository: OnlineReviewsRepository
+    val onlineUsersRepository: OnlineUsersRepository
 }
 
-class DefaultOnlineAppContainer() : OnlineAppContainer {
+class DefaultOnlineAppContainer : OnlineAppContainer {
     private val BASE_URL = "https://ghibliapi.vercel.app/"
 
     private val json = Json {
-        ignoreUnknownKeys=true
+        ignoreUnknownKeys = true
     }
 
     private val retrofit: Retrofit = Retrofit.Builder()
@@ -33,11 +36,21 @@ class DefaultOnlineAppContainer() : OnlineAppContainer {
         .baseUrl(BASE_URL)
         .build()
 
-    private val retrofitService : FilmApiService by lazy {
+    private val retrofitService: FilmApiService by lazy {
         retrofit.create(FilmApiService::class.java)
     }
 
-    override val OnlineFilmsRepository: OnlineFilmsRepository by lazy {
+    private val firebaseService = FirebaseService()
+
+    override val onlineFilmsRepository: OnlineFilmsRepository by lazy {
         NetworkFilmsRepository(retrofitService)
+    }
+
+    override val onlineReviewsRepository: OnlineReviewsRepository by lazy {
+        FirebaseReviewRepository(firebaseService)
+    }
+
+    override val onlineUsersRepository: OnlineUsersRepository by lazy {
+        FirebaseUsersRepository(firebaseService)
     }
 }

@@ -114,7 +114,7 @@ fun ReviewScreen(
     // Aquí añadimos un efecto para actualizar las reseñas cuando se regresa de la pantalla de añadir reseña.
     LaunchedEffect(film.id) {
         // Actualiza las reseñas cuando el usuario regresa de la pantalla de añadir reseña
-        reviewViewModel.getReviewsForFilm(film.id)
+        reviewViewModel.loadReviews(film.id)
     }
 }
 

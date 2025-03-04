@@ -30,10 +30,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -49,6 +47,7 @@ import com.example.ghibliexplorer.data.online.DefaultOnlineAppContainer
 import com.example.ghibliexplorer.data.online.FirebaseReviewRepository
 import com.example.ghibliexplorer.data.online.FirebaseUsersRepository
 import com.example.ghibliexplorer.network.FirebaseService
+import com.example.ghibliexplorer.ui.screens.AdminFilmsScreen
 import com.example.ghibliexplorer.ui.screens.AdministrationScreen
 import com.example.ghibliexplorer.ui.screens.FavFilmsScreen
 import com.example.ghibliexplorer.ui.screens.FilmsScreen
@@ -58,10 +57,8 @@ import com.example.ghibliexplorer.ui.screens.viewmodel.FilmsViewModel
 import com.example.ghibliexplorer.ui.screens.viewmodel.LoginViewModel
 import com.example.ghibliexplorer.ui.screens.viewmodel.RegisterViewModel
 import com.example.ghibliexplorer.ui.screens.viewmodel.ReviewViewModel
-import com.example.ghibliexplorer.ui.screens.viewmodel.ReviewViewModelFactory
 import com.example.ghibliexplorer.ui.screens.viewmodel.UsersViewModel
 import com.example.ghibliexplorer.ui.screens.views.AddReviewDialog
-import com.example.ghibliexplorer.ui.screens.views.AdminReviewsScreen
 import com.example.ghibliexplorer.ui.screens.views.AdminUsersScreen
 import com.example.ghibliexplorer.ui.screens.views.FilmDetailScreen
 import com.example.ghibliexplorer.ui.screens.views.LoginScreen
@@ -80,7 +77,6 @@ enum class GhibliExplorerScreen(@StringRes val titulo: Int){
     Favourites(titulo = R.string.favoritas),
     Reviews(titulo = R.string.resenias),
     AddReview(titulo = R.string.aniadir_resenia),
-    Administration(titulo = R.string.administracion),
     AdminUsers(titulo = R.string.administrar_users),
     AdminReviews(titulo = R.string.administrar_resenias)
 }
@@ -154,11 +150,16 @@ fun GhibliExplorerApp() {
     }
 
     val onlineFilmsRepository =
-        (LocalContext.current.applicationContext as GhibliExplorerApplication).container.OnlineFilmsRepository
+        (LocalContext.current.applicationContext as GhibliExplorerApplication).container.onlineFilmsRepository
 
     val filmsViewModel: FilmsViewModel = remember {
-        FilmsViewModel(onlineFilmsRepository, offlineFilmsRepository, offlineUsersRepository)
+        FilmsViewModel(onlineFilmsRepository, offlineFilmsRepository)
     }
+
+    val firebaseReviewRepository = FirebaseReviewRepository(firebaseService)
+
+    val reviewViewModel: ReviewViewModel =
+        remember { ReviewViewModel(firebaseReviewRepository) }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -251,7 +252,7 @@ fun GhibliExplorerApp() {
                     val filmId = backStackEntry?.arguments?.getString("id")
                     if (filmId != null) {
                         val filmDetails = runBlocking {
-                            DefaultOnlineAppContainer().OnlineFilmsRepository.getFilmById(filmId)
+                            DefaultOnlineAppContainer().onlineFilmsRepository.getFilmById(filmId)
                         }
                         filmDetails?.let { film ->
                             val context = LocalContext.current
@@ -291,22 +292,17 @@ fun GhibliExplorerApp() {
                 composable(route = "${GhibliExplorerScreen.Reviews.name}/{filmId}") { backStackEntry ->
                     val filmId = backStackEntry.arguments?.getString("filmId") ?: return@composable
 
-                    val firebaseReviewRepository = FirebaseReviewRepository(firebaseService)
-
-                    val reviewViewModel: ReviewViewModel = viewModel(factory = ReviewViewModelFactory(firebaseReviewRepository))
-
-
                     LaunchedEffect(filmId) {
                         filmsViewModel.getFilmById(filmId)
-                        reviewViewModel.getReviewsForFilm(filmId)
+                        reviewViewModel.loadReviews(filmId)
+
                     }
 
-                    val film = filmsViewModel.selectedFilm
-                    val reviews by reviewViewModel.reviews.collectAsState()
+                    val selectedFilm = filmsViewModel.selectedFilm
 
-                    if (film != null) {
+                    if (selectedFilm != null) {
                         ReviewScreen(
-                            film = film,
+                            film = selectedFilm,
                             reviewViewModel = reviewViewModel,
                             navController = navController
                         )
@@ -318,10 +314,7 @@ fun GhibliExplorerApp() {
                 composable(route = GhibliExplorerScreen.AddReview.name + "/{filmId}") { backStackEntry ->
                     val filmId = backStackEntry.arguments?.getString("filmId") ?: return@composable
 
-                    val firebaseReviewRepository = FirebaseReviewRepository(firebaseService)
 
-                    val reviewViewModel: ReviewViewModel =
-                        remember { ReviewViewModel(firebaseReviewRepository) }
 
                     LaunchedEffect(filmId) {
                         filmsViewModel.getFilmById(filmId)
@@ -351,7 +344,7 @@ fun GhibliExplorerApp() {
                     AdminUsersScreen(usersViewModel)
                 }
                 composable("AdminReviews") {
-                    AdminReviewsScreen()
+                    AdminFilmsScreen(navController = navController, paddingValues = innerPadding)
                 }
             }
         }

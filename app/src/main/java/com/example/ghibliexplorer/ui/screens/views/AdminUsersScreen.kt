@@ -52,7 +52,6 @@ fun AdminUsersScreen(usersViewModel: UsersViewModel) {
 
     val sortedUsers = users.sortedByDescending {
         val dateTimeStr = it.createdAt
-        // Parseamos la fecha usando el DateTimeFormatter
         LocalDateTime.parse(dateTimeStr, formatter)
     }
 
@@ -62,7 +61,7 @@ fun AdminUsersScreen(usersViewModel: UsersViewModel) {
         createdAtDate == today
     }
 
-    // Los otros usuarios (que no fueron registrados hoy)
+    // Resto de usuarios (que no fueron registrados hoy)
     val otherUsers = sortedUsers.filterNot { user ->
         val createdAtDate = LocalDate.parse(user.createdAt.substring(0, 10))
         createdAtDate == today
@@ -109,7 +108,7 @@ fun AdminUsersScreen(usersViewModel: UsersViewModel) {
                     }
                 }
 
-                // Sección de otros usuarios
+                // Sección de resto de usuarios
                 if (otherUsers.isNotEmpty()) {
                     item {
                         SectionTitle("Usuarios registrados anteriormente")
