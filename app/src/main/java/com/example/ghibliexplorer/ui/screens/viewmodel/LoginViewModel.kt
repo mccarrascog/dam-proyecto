@@ -28,7 +28,6 @@ class LoginViewModel(
     private val _loginResult = MutableStateFlow<LoginResult?>(null)
     val loginResult: StateFlow<LoginResult?> get() = _loginResult
 
-    // Clase para representar el resultado del login
     data class LoginResult(val success: Boolean, val errorMessage: String? = null)
 
     init {
@@ -58,7 +57,6 @@ class LoginViewModel(
                     val localUser = offlineUsersRepository.getUserByEmail(email)
                     if (localUser != null) {
                         Log.e("Login", "User exists in Room, checking role")
-                        // Imprimir el valor de los roles
                         Log.e("Login", "Local user role: ${localUser.rol}")
                         Log.e("Login", "Firestore user role: ${user.rol}")
                         if (localUser.rol != user.rol) {
@@ -96,14 +94,14 @@ class LoginViewModel(
 
             if (documentSnapshot.exists()) {
                 val storedHashedPassword = documentSnapshot.getString("password")
-                Log.e("Login", "Password from Firestore: $storedHashedPassword") // Verificar password de Firestore
+                Log.e("Login", "Password from Firestore: $storedHashedPassword")
 
                 if (storedHashedPassword == hashedPassword) {
                     val userId = documentSnapshot.getString("id")
                         ?: throw IllegalArgumentException("User ID is missing in Firestore")
 
                     val rol = documentSnapshot.getString("rol") ?: "User"
-                    Log.e("Login", "User role from Firestore: $rol") // Verificar rol de Firestore
+                    Log.e("Login", "User role from Firestore: $rol")
 
                     User(
                         id = userId,
@@ -114,7 +112,7 @@ class LoginViewModel(
                     )
                 } else null
             } else {
-                Log.e("Login", "User not found in Firestore") // Log si el documento no existe
+                Log.e("Login", "User not found in Firestore")
                 null
             }
         } catch (e: Exception) {
@@ -125,13 +123,10 @@ class LoginViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                // Obtener la instancia de la aplicación
                 val application = this[APPLICATION_KEY] as GhibliExplorerApplication
 
-                // Obtener el repositorio offline de usuarios
                 val offlineUsersRepository = application.offlineAppContainer.OfflineUsersRepository
 
-                // Pasar el contexto correctamente
                 LoginViewModel(
                     offlineUsersRepository = offlineUsersRepository,
                     context = application.applicationContext

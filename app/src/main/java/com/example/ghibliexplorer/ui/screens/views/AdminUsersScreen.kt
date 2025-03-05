@@ -87,7 +87,7 @@ fun AdminUsersScreen(usersViewModel: UsersViewModel) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No hay usuarios registrados.",
+                    text = "No users registered.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center
@@ -101,7 +101,7 @@ fun AdminUsersScreen(usersViewModel: UsersViewModel) {
                 // Sección de usuarios registrados hoy
                 if (usersToday.isNotEmpty()) {
                     item {
-                        SectionTitle("Usuarios registrados hoy")
+                        SectionTitle("Users registered today")
                     }
                     items(usersToday) { user ->
                         UserItem(user)
@@ -111,7 +111,7 @@ fun AdminUsersScreen(usersViewModel: UsersViewModel) {
                 // Sección de resto de usuarios
                 if (otherUsers.isNotEmpty()) {
                     item {
-                        SectionTitle("Usuarios registrados anteriormente")
+                        SectionTitle("Older registrations")
                     }
                     items(otherUsers) { user ->
                         UserItem(user)
@@ -179,17 +179,17 @@ fun UserItem(user: User) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Correo: ${user.email}",
+                    text = "E-mail: ${user.email}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Rol: ${user.rol}",
+                    text = "Role: ${user.rol}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Registrado el: ${user.createdAt}",
+                    text = "Registered: ${user.createdAt}",
                     style = MaterialTheme.typography.bodySmall,
                     fontStyle = FontStyle.Italic,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)

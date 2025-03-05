@@ -27,7 +27,6 @@ class RegisterViewModel(
     private val _registrationResult = mutableStateOf<Result?>(null)
     val registrationResult: State<Result?> get() = _registrationResult
 
-    // Clase para representar el resultado
     data class Result(val success: Boolean, val errorMessage: String? = null)
 
     fun validateAndRegisterUser(name: String, email: String, password: String, rePassword: String) {
@@ -69,14 +68,13 @@ class RegisterViewModel(
                 return false // El email ya está registrado
             }
 
-            // Generamos un nuevo ID de usuario basado en UUID
             val newId = UUID.randomUUID().toString()
 
             val user = User(
                 id = newId,
                 name = name,
                 email = email,
-                password = generate512(password), // Guardamos la contraseña hasheada
+                password = generate512(password),
                 rol = "User"
             )
 

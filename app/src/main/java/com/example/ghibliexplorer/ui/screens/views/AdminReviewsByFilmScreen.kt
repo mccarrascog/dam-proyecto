@@ -65,7 +65,7 @@ fun AdminReviewsByFilmScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = "Reseñas de ${film.title ?: "Película desconocida"}",
+            text = "${film.title ?: "Unknown Film"}'s Reviews",
             style = MaterialTheme.typography.displayLarge.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -80,7 +80,7 @@ fun AdminReviewsByFilmScreen(
             if (reviews.isEmpty()) {
                 item {
                     Text(
-                        text = "No hay reseñas aún.",
+                        text = "No reviews yet",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontStyle = FontStyle.Italic,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -186,12 +186,12 @@ fun ReviewItem(
                         showDialog = false
                     }
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text("Cancelar")
+                    Text("Cancel")
                 }
             }
         )

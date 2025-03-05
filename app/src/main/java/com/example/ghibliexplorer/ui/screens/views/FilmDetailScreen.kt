@@ -144,7 +144,7 @@ fun FilmDetailScreen(
                             onClick = { navController.navigate("${GhibliExplorerScreen.Reviews.name}/${film.id}") },
                             modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                         ) {
-                            Text("Ver reseñas")
+                            Text("View reviews")
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -153,7 +153,7 @@ fun FilmDetailScreen(
                             onClick = { navController.navigate("${GhibliExplorerScreen.AddReview.name}/${film.id}") },
                             modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                         ) {
-                            Text("Añadir reseña")
+                            Text("Add review")
                         }
                     }
                 }
@@ -251,7 +251,7 @@ fun FilmDetailScreen(
                         },
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                     ) {
-                        Text("Ver reseñas")
+                        Text("View reviews")
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -260,7 +260,7 @@ fun FilmDetailScreen(
                         onClick = { navController.navigate("${GhibliExplorerScreen.AddReview.name}/${film.id}") },
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                     ) {
-                        Text("Añadir reseña")
+                        Text("Add review")
                     }
                 }
             }

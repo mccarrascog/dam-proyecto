@@ -27,7 +27,7 @@ fun AdministrationScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Administración",
+            text = "Administration Panel",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -38,7 +38,7 @@ fun AdministrationScreen(navController: NavController) {
             onClick = { navController.navigate("AdminUsers") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Ver usuarios")
+            Text("View logged-in users")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -47,7 +47,7 @@ fun AdministrationScreen(navController: NavController) {
             onClick = { navController.navigate("AdminReviews") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Ver reseñas")
+            Text("View reviews")
         }
     }
 }

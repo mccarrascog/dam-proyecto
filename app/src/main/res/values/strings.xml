@@ -14,4 +14,5 @@
     <string name="administracion">Administración</string>
     <string name="administrar_users">Administrar Users</string>
     <string name="administrar_resenias">Administrar Reseñas</string>
+    <string name="resenias_usuario">Reseñas del usuario</string>
 </resources>

@@ -115,7 +115,6 @@ fun FilmCard2(
     }
     val reviewCount = filteredReviews.size
 
-    // Log para ver si está cambiando el estado de carga
     LaunchedEffect(isLoading) {
         println("Cargando: $isLoading, cantidad de reseñas: $reviewCount")
     }
@@ -183,7 +182,7 @@ fun FilmCard2(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Reseñas: $reviewCount",
+                            text = "Reviews: $reviewCount",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -196,7 +195,7 @@ fun FilmCard2(
 
 @Composable
 fun ErrorScreen2(retryAction: () -> Unit, modifier: Modifier = Modifier) {
-    Log.e("ErrorScreen2", "Mostrando pantalla de error...") // Log de error
+    Log.e("ErrorScreen2", "Mostrando pantalla de error...")
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -206,7 +205,7 @@ fun ErrorScreen2(retryAction: () -> Unit, modifier: Modifier = Modifier) {
         Image(
             painter = painterResource(id = R.drawable.ic_connection_error),
             contentDescription = "connection_error_description",
-            modifier = Modifier.size(120.dp) // Ajustamos el tamaño de la imagen
+            modifier = Modifier.size(120.dp)
         )
         Text(
             text = stringResource(id = R.string.loading_failed),
@@ -215,7 +214,7 @@ fun ErrorScreen2(retryAction: () -> Unit, modifier: Modifier = Modifier) {
         )
         Button(
             onClick = retryAction,
-            modifier = Modifier.padding(top = 8.dp) // Espacio entre el texto y el botón
+            modifier = Modifier.padding(top = 8.dp)
         ) {
             Text(text = stringResource(id = R.string.retry))
         }

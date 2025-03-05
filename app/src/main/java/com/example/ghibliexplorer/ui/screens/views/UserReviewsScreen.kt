@@ -3,49 +3,55 @@ package com.example.ghibliexplorer.ui.screens.views
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.ghibliexplorer.GhibliExplorerScreen
+import com.example.ghibliexplorer.data.Review
+import com.example.ghibliexplorer.ui.screens.viewmodel.ReviewViewModel
+import com.example.ghibliexplorer.utils.getUserEmail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.ghibliexplorer.GhibliExplorerScreen
-import com.example.ghibliexplorer.data.Film
-import com.example.ghibliexplorer.data.Review
-import com.example.ghibliexplorer.ui.screens.viewmodel.ReviewViewModel
-import com.example.ghibliexplorer.utils.getUserEmail
+import com.example.ghibliexplorer.ui.screens.viewmodel.FilmsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReviewScreen(
-    film: Film,
+fun UserReviewsScreen(
     reviewViewModel: ReviewViewModel,
-    navController: NavController, // Navegación a la pantalla de añadir reseña
+    filmsViewModel: FilmsViewModel,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    // Usamos un estado para la lista de reseñas
-    val reviews by reviewViewModel.reviews.collectAsState()
-    LaunchedEffect(reviews) {
-        Log.d("ReviewScreen", "Reseñas recibidas: $reviews")
-    }
-
+    // Obtenemos todas las reseñas
+    val allReviews by reviewViewModel.reviews.collectAsState()
+    // Obtenemos el correo del usuario logueado
     val context = LocalContext.current
     val userEmail = getUserEmail(context).orEmpty()
+
+    // Filtramos las reseñas por el correo del usuario
+    val userReviews = allReviews.filter { it.author == userEmail }
+
+    LaunchedEffect(userReviews) {
+        Log.d("UserReviewsScreen", "Reseñas del usuario: $userReviews")
+    }
 
     Column(
         modifier = modifier
@@ -55,7 +61,7 @@ fun ReviewScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = "${film.title ?: "Unknown Film"}'s Reviews",
+            text = "Your Reviews",
             style = MaterialTheme.typography.displayLarge.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -64,14 +70,14 @@ fun ReviewScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (reviews.isNotEmpty()) {
-            val averageRating = reviews.map { it.rating }.average()
+        if (userReviews.isNotEmpty()) {
+            val averageRating = userReviews.map { it.rating }.average()
             Text(
                 text = "Average Rating: ${
                     if (averageRating % 1 == 0.0) {
-                        averageRating.toInt() 
+                        averageRating.toInt()
                     } else {
-                        String.format("%.1f", averageRating) 
+                        String.format("%.1f", averageRating)
                     }
                 }⭐",
                 style = MaterialTheme.typography.bodyLarge.copy(
@@ -85,10 +91,10 @@ fun ReviewScreen(
         LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
-            if (reviews.isEmpty()) {
+            if (userReviews.isEmpty()) {
                 item {
                     Text(
-                        text = "No reviews yet. Be the first to write one!",
+                        text = "No reviews yet :(",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontStyle = FontStyle.Italic,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -96,52 +102,35 @@ fun ReviewScreen(
                     )
                 }
             } else {
-                items(reviews) { review ->
+                items(userReviews) { review ->
                     ReviewItem(
                         review = review,
                         userEmail = userEmail,
-                        navController = navController,
-                        film = film
+                        filmsViewModel = filmsViewModel,
+                        reviewViewModel = reviewViewModel,
+                        navController = navController
                     )
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = {
-                navController.navigate("${GhibliExplorerScreen.AddReview.name}/${film.id}")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 14.dp)
-        ) {
-            Text(
-                text = "Add Review",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
     }
 
-    LaunchedEffect(film.id) {
-        reviewViewModel.loadReviews(film.id)
+    // Cargar todas las reseñas al iniciar la pantalla
+    LaunchedEffect(userEmail) {
+        reviewViewModel.loadReviewsForAllFilms()
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReviewItem(
     review: Review,
     userEmail: String,
-    navController: NavController,
-    film: Film
+    filmsViewModel: FilmsViewModel,
+    reviewViewModel: ReviewViewModel,
+    navController: NavController
 ) {
     val isUserReview = review.author == userEmail
 
@@ -154,12 +143,30 @@ fun ReviewItem(
             .clickable {
                 if (isUserReview) {
                     // Si es la reseña del usuario, abrir el AddReviewDialog
-                    navController.navigate("${GhibliExplorerScreen.AddReview.name}/${film.id}")
+                    navController.navigate("${GhibliExplorerScreen.AddReview.name}/${review.filmId}")
                 }
             }
     ) {
         // Contenedor de los datos de la reseña
         Column(modifier = Modifier.padding(16.dp)) {
+            LaunchedEffect(review.filmId) {
+                filmsViewModel.getFilmById(review.filmId)
+                reviewViewModel.loadReviews(review.filmId)
+            }
+
+            // Accedemos a la película seleccionada desde el ViewModel
+            val film = filmsViewModel.selectedFilm
+            if (film != null) {
+                Text(
+                    text = film.title.toString(),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = review.author,
                 style = MaterialTheme.typography.bodyLarge.copy(
@@ -200,7 +207,7 @@ fun ReviewItem(
             if (isUserReview) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Tu reseña",
+                    text = "Your review",
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -209,4 +216,3 @@ fun ReviewItem(
         }
     }
 }
-

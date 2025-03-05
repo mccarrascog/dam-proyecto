@@ -60,6 +60,7 @@ import com.example.ghibliexplorer.ui.screens.views.LoginScreen
 import com.example.ghibliexplorer.ui.screens.views.RegisterScreen
 import com.example.ghibliexplorer.ui.screens.views.ReviewScreen
 import com.example.ghibliexplorer.ui.screens.views.StartScreen
+import com.example.ghibliexplorer.ui.screens.views.UserReviewsScreen
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -74,7 +75,8 @@ enum class GhibliExplorerScreen(@StringRes val titulo: Int){
     AddReview(titulo = R.string.aniadir_resenia),
     Administration(titulo = R.string.administracion),
     AdminUsers(titulo = R.string.administrar_users),
-    AdminReviews(titulo = R.string.administrar_resenias)
+    AdminReviews(titulo = R.string.administrar_resenias),
+    UserReviews(titulo = R.string.resenias_usuario)
 }
 
 /**
@@ -322,6 +324,10 @@ fun GhibliExplorerApp() {
 
                 composable(route = GhibliExplorerScreen.AdminReviews.name) {
                     AdminFilmsScreen(navController = navController, paddingValues = innerPadding)
+                }
+
+                composable(route = GhibliExplorerScreen.UserReviews.name) {
+                    UserReviewsScreen(reviewViewModel,filmsViewModel,navController = navController)
                 }
 
                 composable(route = GhibliExplorerScreen.AdminReviews.name + "/{filmId}") {backStackEntry ->

@@ -35,10 +35,6 @@ class ReviewViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    init {
-        // No se puede inicializar _reviews aquí sin un filmId válido
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun loadReviews(filmId: String) {
         viewModelScope.launch {
@@ -60,7 +56,6 @@ class ReviewViewModel(
         viewModelScope.launch {
             _isLoading.value = true // Iniciar el estado de carga
             try {
-                // Suponiendo que tu repositorio tenga un método para obtener todas las reseñas
                 val fetchedReviews = onlineReviewsRepository.getReviewsForAllFilms()
                 _reviews.value = fetchedReviews // Actualiza la lista completa de reseñas
                 Log.d("ReviewViewModel", "Reseñas cargadas para todas las películas, cantidad: ${fetchedReviews.size}")

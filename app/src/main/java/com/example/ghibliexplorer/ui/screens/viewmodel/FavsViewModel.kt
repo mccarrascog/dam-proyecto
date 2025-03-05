@@ -64,7 +64,6 @@ class FavsViewModel(
                 favFilmsUiState = FavFilmsUiState.Loading
                 Log.d("FavsViewModel", "Cargando favoritos para el usuario: $userId")
 
-                // Aquí actualizamos el estado con la lista de favoritos en forma de Flow
                 val favFilmsFlow = offlineFilmsRepository.getAllFavouriteFilmsByUser(userId)
                 favFilmsUiState = FavFilmsUiState.Success(favFilmsFlow)
                 Log.d("FavsViewModel", "Favoritos cargados correctamente")
@@ -76,11 +75,11 @@ class FavsViewModel(
     }
 
     fun removeFilmFromFavs(film: Film) {
-        val userId = loggedUser?.id ?: return // Asegúrate de que hay un usuario logueado
+        val userId = loggedUser?.id ?: return
         viewModelScope.launch {
             try {
-                val favouriteFilm = FavouriteFilm(userId = userId, filmId = film.id) // Crear el objeto correcto
-                offlineFilmsRepository.deleteFromFavourites(favouriteFilm) // Pasar FavouriteFilm
+                val favouriteFilm = FavouriteFilm(userId = userId, filmId = film.id)
+                offlineFilmsRepository.deleteFromFavourites(favouriteFilm)
                 Log.d("FavsViewModel", "Película eliminada de favoritos: ${film.title}")
                 getFavFilms() // Actualizar lista de favoritos después de eliminar la película
             } catch (e: Exception) {
@@ -91,12 +90,12 @@ class FavsViewModel(
     }
 
     fun addFilmToFavourites(film: Film) {
-        val userId = loggedUser?.id ?: return // Si userId es null, la función retorna inmediatamente
+        val userId = loggedUser?.id ?: return
 
         viewModelScope.launch {
             try {
-                val favouriteFilm = FavouriteFilm(userId = userId, filmId = film.id) // Crear objeto correcto
-                offlineFilmsRepository.addToFavourites(favouriteFilm) // Guardar en favoritos
+                val favouriteFilm = FavouriteFilm(userId = userId, filmId = film.id)
+                offlineFilmsRepository.addToFavourites(favouriteFilm)
                 Log.d("FavsViewModel", "Película añadida a favoritos: ${film.title}")
                 getFavFilms() // Actualizar lista de favoritos después de añadir la película
             } catch (e: Exception) {
@@ -127,16 +126,12 @@ class FavsViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                // Obtener la instancia de la aplicación
                 val application = (this[APPLICATION_KEY] as GhibliExplorerApplication)
 
-                // Obtener el repositorio de películas offline
                 val offlineUsersRepository = application.offlineAppContainer.OfflineUsersRepository
 
-                // Obtener el repositorio de películas offline
                 val offlineFilmsRepository = application.offlineAppContainer.OfflineFilmsRepository
 
-                // Aquí accedemos a 'context' directamente desde el 'initializer'
                 FavsViewModel(
                     offlineUsersRepository,
                     offlineFilmsRepository,

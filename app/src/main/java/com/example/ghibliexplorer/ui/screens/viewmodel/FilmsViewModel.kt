@@ -42,7 +42,7 @@ class FilmsViewModel(
     var selectedFilm: Film? by mutableStateOf(null)
         private set
 
-    private var userEmail: String? = null // Guardamos el userEmail como una propiedad del ViewModel
+    private var userEmail: String? = null
 
     // Esta función debería ser llamada una vez con el userEmail cuando el usuario inicia sesión o cuando es necesario
     fun setUserEmail(email: String?) {
@@ -64,7 +64,7 @@ class FilmsViewModel(
                 Log.e("FilmsViewModel", "Películas obtenidas de la API: ${filmsFromApi.size}")
 
                 if (filmsFromApi.isNotEmpty()) {
-                    // Guardar las películas en la base de datos de films
+                    // Guardar las películas en la base de datos local de films
                     filmsFromApi.forEach { film ->
                         if (!offlineFilmsRepository.isFilmInDatabase(film.id)) {
                             offlineFilmsRepository.insertFilm(film)
@@ -77,7 +77,6 @@ class FilmsViewModel(
                         AdminFilmsUiState.Success(filmsFromApi)
                     )
                 } else {
-                    // Si la API no retorna películas
                     updateFilmsStates(FilmsUiState.Error, AdminFilmsUiState.Error)
                     Log.e("FilmsViewModel", "La API no retornó películas.")
                 }
@@ -109,13 +108,10 @@ class FilmsViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                // Obtener la instancia de la aplicación
                 val application = (this[APPLICATION_KEY] as GhibliExplorerApplication)
 
-                // Obtener el repositorio de películas online
                 val onlineFilmsRepository = application.container.onlineFilmsRepository
 
-                // Obtener el repositorio de películas offline
                 val offlineFilmsRepository = application.offlineAppContainer.OfflineFilmsRepository
 
                 FilmsViewModel(

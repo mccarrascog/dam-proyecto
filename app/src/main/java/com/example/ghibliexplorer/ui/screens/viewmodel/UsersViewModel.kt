@@ -39,7 +39,6 @@ class UsersViewModel(
                 _users.value = userList
 
                 userList.forEach { user ->
-                    // Ejemplo de cómo insertar o actualizar usuarios en la base de datos offline
                     val existingUser = offlineUsersRepository.getUserByEmail(user.email)
                     if (existingUser == null) {
                         offlineUsersRepository.insertUser(user)
@@ -65,21 +64,18 @@ class UsersViewModel(
             val user = document.toObject(User::class.java)
 
             // Si el documento tiene los campos esperados, lo devolvemos con el email como ID
-            user?.copy(email = email, id = UUID.randomUUID().toString()) // Asignamos un UUID para id
+            user?.copy(email = email, id = UUID.randomUUID().toString())
         }
     }
 
-    // Método adicional para obtener un usuario por su email desde el repositorio offline
     suspend fun getUserByEmail(email: String): User? {
         return offlineUsersRepository.getUserByEmail(email)
     }
 
-    // Método para insertar un usuario en el repositorio offline
     suspend fun insertUser(user: User) {
         offlineUsersRepository.insertUser(user)
     }
 
-    // Método para actualizar un usuario en el repositorio offline
     suspend fun updateUser(user: User) {
         offlineUsersRepository.updateUser(user)
     }

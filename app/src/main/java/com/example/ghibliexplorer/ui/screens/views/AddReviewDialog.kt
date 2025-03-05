@@ -47,13 +47,13 @@ fun AddReviewDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = if (userReview == null) "Añadir Reseña" else "Editar Reseña") },
+        title = { Text(text = if (userReview == null) "Add Review" else "Update Review") },
         text = {
             Column {
                 TextField(
                     value = userEmail,
                     onValueChange = {},
-                    label = { Text("Autor") },
+                    label = { Text("Author") },
                     enabled = false, // El usuario no debe poder cambiar su email
                 )
 
@@ -62,7 +62,7 @@ fun AddReviewDialog(
                 TextField(
                     value = comment,
                     onValueChange = { comment = it },
-                    label = { Text("Comentario") }
+                    label = { Text("Comment") }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -74,7 +74,7 @@ fun AddReviewDialog(
                     steps = 7
                 )
 
-                Text(text = "Puntuación: ${if (rating % 1 == 0f) rating.toInt() else String.format("%.1f", rating)}⭐")
+                Text(text = "Rating: ${if (rating % 1 == 0f) rating.toInt() else String.format("%.1f", rating)}⭐")
             }
         },
         confirmButton = {
@@ -83,7 +83,7 @@ fun AddReviewDialog(
                 val newReview = if (userReview == null) {
                     // Crear una nueva reseña con un ID generado aleatoriamente si no hay reseña previa
                     Review(
-                        id = UUID.randomUUID().toString(),  // ID generado aleatoriamente
+                        id = UUID.randomUUID().toString(),
                         filmId = film.id,
                         author = userEmail,
                         rating = rating,
@@ -111,22 +111,29 @@ fun AddReviewDialog(
 
                 onDismiss() // Cerrar el diálogo
             }) {
-                Text(if (userReview == null) "Guardar" else "Actualizar")  // Cambiar el texto del botón
+                Text(if (userReview == null) "Save" else "Update", style = MaterialTheme.typography.bodySmall)  // Estilo más pequeño
             }
         },
-                dismissButton = {
-            Column {
-                Button(onClick = onDismiss) {
-                    Text("Cancelar")
+        dismissButton = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f).padding(2.dp)
+                ) {
+                    Text("Cancel", style = MaterialTheme.typography.bodySmall)
                 }
 
                 if (userReview != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = { showDeleteConfirmationDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                        modifier = Modifier.weight(1f).padding(2.dp)
                     ) {
-                        Text("Eliminar", color = Color.White)
+                        Text("Delete", color = Color.White, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
@@ -137,24 +144,31 @@ fun AddReviewDialog(
     if (showDeleteConfirmationDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmationDialog = false },
-            title = { Text(text = "Eliminar Reseña") },
-            text = { Text("¿Estás seguro de que deseas eliminar esta reseña?") },
+            title = { Text(text = "Delete Review") },
+            text = { Text("Are you sure you want to delete this review?") },
             confirmButton = {
-                Button(onClick = {
-                    userReview?.let { viewModel.deleteReview(it) }
-                    showDeleteConfirmationDialog = false
-                    onDismiss()
-                }) {
-                    Text("Eliminar")
+                Button(
+                    onClick = {
+                        userReview?.let { viewModel.deleteReview(it) }
+                        showDeleteConfirmationDialog = false
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red // Establecer el fondo del botón como rojo
+                    ),
+                    modifier = Modifier.size(100.dp, 40.dp)  // Hacer el botón más pequeño
+                ) {
+                    Text("Delete", color = Color.White, style = MaterialTheme.typography.bodySmall)  // Estilo más pequeño
                 }
             },
             dismissButton = {
-                Button(onClick = { showDeleteConfirmationDialog = false }) {
-                    Text("Cancelar")
+                Button(
+                    onClick = { showDeleteConfirmationDialog = false },
+                    modifier = Modifier.size(100.dp, 40.dp)  // Hacer el botón más pequeño
+                ) {
+                    Text("Cancel", style = MaterialTheme.typography.bodySmall)  // Estilo más pequeño
                 }
             }
         )
     }
 }
-
-

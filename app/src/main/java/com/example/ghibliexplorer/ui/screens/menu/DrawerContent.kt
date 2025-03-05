@@ -9,9 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -49,33 +50,33 @@ fun DrawerContent(
     }
 
     // Solo mostrar el Drawer si el usuario está autenticado
-    if (loginResult?.success == true) { // Si loginResult es exitoso
+    if (loginResult?.success == true) {
         Surface(
             modifier = Modifier
-                .width(280.dp) // Ajusta el ancho del menú
-                .heightIn(min = 0.dp, max = Dp.Unspecified) // Permite que solo ocupe el espacio necesario
+                .width(280.dp)
+                .heightIn(min = 0.dp, max = Dp.Unspecified)
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(top = topBarHeight), // Desplaza el menú debajo del TopAppBar
+                .padding(top = topBarHeight),
             shape = RoundedCornerShape(
                 topStart = 16.dp,
                 bottomStart = 16.dp
             ),
-            tonalElevation = 8.dp // Sombra para profundidad
+            tonalElevation = 8.dp
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.Top // Asegura que los elementos se alineen arriba
+                verticalArrangement = Arrangement.Top
             ) {
                 // Título "Menú"
                 userName.value?.let {
                     Text(
-                        text = "Bienvenido, $it!",
+                        text = "Welcome, $it!",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
-                        modifier = Modifier.padding(bottom = 8.dp) // Menor espacio para que no se aleje mucho del título
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 
@@ -86,9 +87,8 @@ fun DrawerContent(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                // Opciones de navegación
                 Column {
-                    DrawerItem("Inicio", Icons.Default.Home) {
+                    DrawerItem("Home", Icons.Default.Home) {
                         navController.navigate("Start")
                         onClose()
                     }
@@ -100,27 +100,31 @@ fun DrawerContent(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    DrawerItem("Favs", Icons.Default.Favorite) {
+                    DrawerItem("Favs", Icons.Default.FavoriteBorder) {
                         navController.navigate("Favourites")
+                        onClose()
+                    }
+
+                    DrawerItem("Your Reviews", Icons.Default.MailOutline) {
+                        navController.navigate("UserReviews") // Navegar a la pantalla de reseñas del usuario
                         onClose()
                     }
 
                     // Mostrar la opción de "Administrar" solo si el rol es "Admin"
                     userRole.value?.takeIf { it == "Admin" }?.let {
                         Spacer(modifier = Modifier.height(16.dp))
-                        DrawerItem("Administrar", Icons.Default.Settings) {
+                        DrawerItem("Admin", Icons.Default.Settings) {
                             navController.navigate("Administration") // Navegar a la pantalla de administración
                             onClose()
                         }
                     }
                 }
 
-                // Espacio flexible para empujar el botón de logout hacia abajo
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Botón de Logout
-                Divider(modifier = Modifier.padding(vertical = 8.dp)) // Separador antes de Logout
-                DrawerItem("Cerrar sesión", Icons.Default.ExitToApp) {
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                DrawerItem("Logout", Icons.Default.ExitToApp) {
                     Log.e("Logout", "Botón de cerrar sesión pulsado")
 
                     // Limpiar los datos del usuario almacenados en el dispositivo
@@ -129,7 +133,6 @@ fun DrawerContent(
 
                     loginViewModel.logout()
 
-                    // Navegar al Login
                     navController.navigate("Login") {
                         popUpTo(0) { inclusive = true }
                         launchSingleTop = true
@@ -147,6 +150,6 @@ fun DrawerContent(
 fun clearUserData(context: Context) {
     val sharedPreferences = context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
-    editor.remove("user_email") // Borrar el correo electrónico guardado
+    editor.remove("user_email")
     editor.apply()
 }
