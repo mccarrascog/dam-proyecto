@@ -15,7 +15,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.ghibliexplorer.ui.screens.viewmodel.LoginViewModel
 import com.example.ghibliexplorer.utils.saveUserEmail
@@ -25,7 +24,7 @@ import com.example.ghibliexplorer.utils.saveUserEmail
 fun LoginScreen(
   onRegisterButtonClicked: () -> Unit,
   navController: NavController,
-  loginViewModel: LoginViewModel = viewModel(),
+  loginViewModel: LoginViewModel,
   onLoginSuccess: () -> Unit,
   modifier: Modifier = Modifier
 ) {

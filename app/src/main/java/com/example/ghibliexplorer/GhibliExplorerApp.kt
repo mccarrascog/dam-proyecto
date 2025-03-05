@@ -30,10 +30,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -42,10 +40,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.ghibliexplorer.data.offline.DefaultOfflineAppContainer
 import com.example.ghibliexplorer.data.online.DefaultOnlineAppContainer
-import com.example.ghibliexplorer.data.online.FirebaseUsersRepository
-import com.example.ghibliexplorer.network.FirebaseService
 import com.example.ghibliexplorer.ui.screens.AdminFilmsScreen
 import com.example.ghibliexplorer.ui.screens.AdministrationScreen
 import com.example.ghibliexplorer.ui.screens.FavFilmsScreen
@@ -133,21 +128,8 @@ fun GhibliExplorerApp() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
 
-    val context = LocalContext.current
-
-    val firebaseService = remember { FirebaseService() }
-    val firebaseUsersRepository = remember { FirebaseUsersRepository(firebaseService) }
-
-    val appContainer = DefaultOfflineAppContainer(context)
-    val offlineUsersRepository = appContainer.OfflineUsersRepository
-
-    val loginViewModel: LoginViewModel = remember {
-        LoginViewModel(firebaseUsersRepository, offlineUsersRepository)
-    }
-
-    val registerViewModel = remember {
-        RegisterViewModel(offlineUsersRepository = offlineUsersRepository)  // Asegúrate de pasar el repositorio correcto
-    }
+    val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
+    val registerViewModel: RegisterViewModel = viewModel(factory = RegisterViewModel.Factory)
 
     val filmsViewModel: FilmsViewModel = viewModel(factory = FilmsViewModel.Factory)
     val reviewViewModel: ReviewViewModel = viewModel(factory = ReviewViewModel.Factory)

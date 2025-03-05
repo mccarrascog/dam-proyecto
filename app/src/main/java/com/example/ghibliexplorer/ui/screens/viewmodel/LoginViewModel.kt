@@ -1,13 +1,18 @@
 package com.example.ghibliexplorer.ui.screens.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.ghibliexplorer.GhibliExplorerApplication
 import com.example.ghibliexplorer.data.User
-import com.example.ghibliexplorer.data.offline.LocalUserRepository
 import com.example.ghibliexplorer.data.offline.OfflineUsersRepository
-import com.example.ghibliexplorer.data.online.FirebaseUsersRepository
 import com.example.ghibliexplorer.utils.SHA
+import com.example.ghibliexplorer.utils.getUserEmail
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,8 +20,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class LoginViewModel(
-    private val firebaseUsersRepository: FirebaseUsersRepository,
-    private val offlineUsersRepository: OfflineUsersRepository // Para Room
+    private val offlineUsersRepository: OfflineUsersRepository,
+    private val context: Context
 ) : ViewModel() {
 
     // Estado que mantiene el resultado del login
@@ -26,15 +31,26 @@ class LoginViewModel(
     // Clase para representar el resultado del login
     data class LoginResult(val success: Boolean, val errorMessage: String? = null)
 
+    init {
+        // Verificar si el correo está guardado al iniciar
+        checkIfLoggedIn()
+    }
+    // Función para verificar si el usuario está logueado automáticamente
+    private fun checkIfLoggedIn() {
+        val email = getUserEmail(context) // Obtener el correo guardado en SharedPreferences
+        if (email != null) {
+            // Si el correo está guardado, marcar el login como exitoso
+            _loginResult.value = LoginResult(success = true)
+        } else {
+            // Si no hay correo guardado, marcar como no logueado
+            _loginResult.value = LoginResult(success = false)
+        }
+    }
     fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
-                val hashedPassword = SHA.generate512(password) ?: run {
-                    _loginResult.value = LoginResult(success = false, errorMessage = "Password hashing failed")
-                    return@launch
-                }
+                val hashedPassword = SHA.generate512(password)
 
-                // Verificar en Firestore
                 val user = authenticateUser(email, hashedPassword)
 
                 if (user != null) {
@@ -93,7 +109,7 @@ class LoginViewModel(
                         id = userId,
                         name = documentSnapshot.getString("name") ?: "",
                         email = email,
-                        password = storedHashedPassword ?: "",
+                        password = storedHashedPassword,
                         rol = rol
                     )
                 } else null
@@ -104,6 +120,23 @@ class LoginViewModel(
         } catch (e: Exception) {
             Log.e("LoginViewModel", "Error authenticating user", e)
             null
+        }
+    }
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                // Obtener la instancia de la aplicación
+                val application = this[APPLICATION_KEY] as GhibliExplorerApplication
+
+                // Obtener el repositorio offline de usuarios
+                val offlineUsersRepository = application.offlineAppContainer.OfflineUsersRepository
+
+                // Pasar el contexto correctamente
+                LoginViewModel(
+                    offlineUsersRepository = offlineUsersRepository,
+                    context = application.applicationContext
+                )
+            }
         }
     }
 }

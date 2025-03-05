@@ -15,7 +15,6 @@ import com.example.ghibliexplorer.data.Film
 import com.example.ghibliexplorer.data.User
 import com.example.ghibliexplorer.data.offline.OfflineFilmsRepository
 import com.example.ghibliexplorer.data.offline.OfflineUsersRepository
-import com.example.ghibliexplorer.data.online.OnlineUsersRepository
 import com.example.ghibliexplorer.utils.getUserEmail
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -130,9 +129,6 @@ class FavsViewModel(
             initializer {
                 // Obtener la instancia de la aplicación
                 val application = (this[APPLICATION_KEY] as GhibliExplorerApplication)
-
-                // Obtener el repositorio de películas online
-                val onlineUsersRepository = application.container.onlineUsersRepository
 
                 // Obtener el repositorio de películas offline
                 val offlineUsersRepository = application.offlineAppContainer.OfflineUsersRepository

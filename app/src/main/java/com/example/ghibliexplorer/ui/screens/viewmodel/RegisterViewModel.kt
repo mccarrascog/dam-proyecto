@@ -4,10 +4,14 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.ghibliexplorer.GhibliExplorerApplication
 import com.example.ghibliexplorer.data.User
 import com.example.ghibliexplorer.data.offline.OfflineUsersRepository
-import com.example.ghibliexplorer.data.online.FirebaseUsersRepository
 import com.example.ghibliexplorer.utils.SHA.generate512
 import kotlinx.coroutines.launch
 
@@ -16,7 +20,7 @@ import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class RegisterViewModel(
-    private val offlineUsersRepository: OfflineUsersRepository // Repositorio para Room
+    private val offlineUsersRepository: OfflineUsersRepository
 ) : ViewModel() {
 
     // Estado que mantiene el resultado del registro
@@ -92,5 +96,17 @@ class RegisterViewModel(
     // Método para actualizar el estado del resultado del registro
     private fun updateRegistrationResult(success: Boolean, errorMessage: String? = null) {
         _registrationResult.value = Result(success, errorMessage)
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = this[APPLICATION_KEY] as GhibliExplorerApplication
+
+                val offlineUsersRepository = application.offlineAppContainer.OfflineUsersRepository
+
+                RegisterViewModel(offlineUsersRepository)
+            }
+        }
     }
 }
