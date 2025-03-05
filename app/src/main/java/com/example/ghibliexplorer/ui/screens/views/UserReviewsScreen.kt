@@ -26,10 +26,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontStyle
+import com.example.ghibliexplorer.data.Film
 import com.example.ghibliexplorer.ui.screens.viewmodel.FilmsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -123,7 +127,6 @@ fun UserReviewsScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReviewItem(
     review: Review,
@@ -134,6 +137,14 @@ fun ReviewItem(
 ) {
     val isUserReview = review.author == userEmail
 
+    // Estado para almacenar la película
+    var film by remember { mutableStateOf<Film?>(null) }
+
+    // Cargar la película cuando cambia el filmId
+    LaunchedEffect(review.filmId) {
+        film = filmsViewModel.getFilmObjectById(review.filmId)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -142,29 +153,22 @@ fun ReviewItem(
             .shadow(4.dp, shape = RoundedCornerShape(12.dp))
             .clickable {
                 if (isUserReview) {
-                    // Si es la reseña del usuario, abrir el AddReviewDialog
                     navController.navigate("${GhibliExplorerScreen.AddReview.name}/${review.filmId}")
                 }
             }
     ) {
-        // Contenedor de los datos de la reseña
         Column(modifier = Modifier.padding(16.dp)) {
-            LaunchedEffect(review.filmId) {
-                filmsViewModel.getFilmById(review.filmId)
-                reviewViewModel.loadReviews(review.filmId)
-            }
-
-            // Accedemos a la película seleccionada desde el ViewModel
-            val film = filmsViewModel.selectedFilm
-            if (film != null) {
+            // Mostrar el título de la película si se ha cargado
+            film?.title?.let { title ->
                 Text(
-                    text = film.title.toString(),
+                    text = title,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 )
             }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
@@ -203,7 +207,6 @@ fun ReviewItem(
                 )
             )
 
-            // Si es la reseña del usuario, agregar un indicador visual
             if (isUserReview) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(

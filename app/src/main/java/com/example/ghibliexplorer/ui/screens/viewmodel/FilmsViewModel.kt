@@ -105,6 +105,10 @@ class FilmsViewModel(
         }
     }
 
+    suspend fun getFilmObjectById(filmId: String) : Film?{
+        return onlineFilmsRepository.getFilmById(filmId)
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
