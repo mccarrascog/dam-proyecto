@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.ghibliexplorer.R
 import com.example.ghibliexplorer.ui.screens.viewmodel.FavsViewModel
@@ -24,7 +23,9 @@ import com.example.ghibliexplorer.ui.screens.views.FavsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavFilmsScreen(navController: NavController) {
+fun FavFilmsScreen(
+    favsViewModel: FavsViewModel,
+    navController: NavController) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -35,8 +36,6 @@ fun FavFilmsScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(it)
         ) {
-            val context = LocalContext.current
-            val favsViewModel: FavsViewModel = viewModel(factory = FavsViewModel.provideFactory(context))
             FavsScreen(
                 favFilmsUiState = favsViewModel.favFilmsUiState,
                 retryAction = { favsViewModel.getFavFilms() },
@@ -46,6 +45,7 @@ fun FavFilmsScreen(navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavFilmsTopAppBar(scrollBehavior: TopAppBarScrollBehavior, modifier: Modifier = Modifier) {
     CenterAlignedTopAppBar(

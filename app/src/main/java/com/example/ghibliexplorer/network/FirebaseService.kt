@@ -11,6 +11,7 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import java.util.Date
+import java.util.UUID
 
 /**
  * Este archivo define la clase FirebaseService, que gestiona las interacciones con la bd de Firebase.
@@ -126,6 +127,21 @@ class FirebaseService {
             document?.getString("rol") // Obtenemos el rol
         } catch (e: Exception) {
             null // En caso de error, no mostramos la opción de admin
+        }
+    }
+
+     suspend fun getUsers(): List<User> {
+        val usersCollection = db.collection("users")
+        val snapshot = usersCollection.get().await()
+
+        return snapshot.documents.mapNotNull { document ->
+            val email = document.id
+            val user = document.toObject(User::class.java)
+
+            user?.copy(
+                email = email,
+                id = UUID.randomUUID().toString()
+            )
         }
     }
 

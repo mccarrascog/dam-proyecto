@@ -1,6 +1,7 @@
 package com.example.ghibliexplorer.ui.screens.views
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,17 +40,19 @@ fun ReviewScreen(
 ) {
     // Usamos un estado para la lista de reseñas
     val reviews by reviewViewModel.reviews.collectAsState()
+    LaunchedEffect(reviews) {
+        Log.d("ReviewScreen", "Reseñas recibidas: $reviews")
+    }
 
     val context = LocalContext.current
     val userEmail = getUserEmail(context).orEmpty()
 
-    // Ajusta el padding superior para no tapar contenido con el TopAppBar
     Column(
         modifier = modifier
             .fillMaxSize()
-            .systemBarsPadding() // Asegura que el contenido respete la barra de estado
-            .padding(top = 56.dp) // Ajusta el valor del top padding según el tamaño de tu TopAppBar
-            .padding(16.dp) // Padding adicional para el contenido de la pantalla
+            .systemBarsPadding()
+            .padding(top = 56.dp)
+            .padding(16.dp)
     ) {
         Text(
             text = "Reseñas de ${film.title ?: "Película desconocida"}",
@@ -58,6 +61,24 @@ fun ReviewScreen(
                 color = MaterialTheme.colorScheme.primary
             )
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (reviews.isNotEmpty()) {
+            val averageRating = reviews.map { it.rating }.average()
+            Text(
+                text = "Puntuación Media: ${
+                    if (averageRating % 1 == 0.0) {
+                        averageRating.toInt() 
+                    } else {
+                        String.format("%.1f", averageRating) 
+                    }
+                }⭐",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -90,14 +111,13 @@ fun ReviewScreen(
 
         Button(
             onClick = {
-                // Aquí navegamos a la pantalla de añadir reseña
                 navController.navigate("${GhibliExplorerScreen.AddReview.name}/${film.id}")
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
-                .clip(RoundedCornerShape(8.dp)) // Redondea el borde del botón
-                .background(MaterialTheme.colorScheme.primary) // Estilo de fondo
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.primary)
                 .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(vertical = 14.dp)
         ) {
@@ -111,9 +131,7 @@ fun ReviewScreen(
         }
     }
 
-    // Aquí añadimos un efecto para actualizar las reseñas cuando se regresa de la pantalla de añadir reseña.
     LaunchedEffect(film.id) {
-        // Actualiza las reseñas cuando el usuario regresa de la pantalla de añadir reseña
         reviewViewModel.loadReviews(film.id)
     }
 }
@@ -125,15 +143,14 @@ fun ReviewItem(
     navController: NavController,
     film: Film
 ) {
-    val isUserReview = review.author == userEmail // Verifica si esta es la reseña del usuario
+    val isUserReview = review.author == userEmail
 
-    // Contenedor principal con borde redondeado, fondo y sombra
     Column(
         modifier = Modifier
-            .fillMaxWidth() // Asegura que ocupe todo el ancho disponible
-            .clip(RoundedCornerShape(12.dp)) // Aplica bordes redondeados al fondo
-            .background(MaterialTheme.colorScheme.surface) // Fondo de la reseña
-            .shadow(4.dp, shape = RoundedCornerShape(12.dp)) // Sombra sutil y redondeada
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .shadow(4.dp, shape = RoundedCornerShape(12.dp))
             .clickable {
                 if (isUserReview) {
                     // Si es la reseña del usuario, abrir el AddReviewDialog
@@ -141,7 +158,7 @@ fun ReviewItem(
                 }
             }
     ) {
-        // Contenedor de los datos de la reseña, con padding interno
+        // Contenedor de los datos de la reseña
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = review.author,
@@ -154,7 +171,7 @@ fun ReviewItem(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "⭐ ${review.rating}/5",
+                text = "⭐ ${if (review.rating % 1 == 0f) review.rating.toInt() else String.format("%.1f", review.rating)}/5",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.secondary

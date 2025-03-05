@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +30,7 @@ import com.example.ghibliexplorer.ui.screens.viewmodel.FilmsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.ghibliexplorer.GhibliExplorerScreen
 import com.example.ghibliexplorer.data.Review
 import com.example.ghibliexplorer.ui.screens.viewmodel.ReviewViewModel
 
@@ -87,7 +89,13 @@ fun AdminReviewsGridScreen(
     ) {
         items(films) { film ->
             Log.d("FilmReviewDebug", "Mostrando película: ${film.title}") // Log por cada película mostrada
-            FilmCard2(film = film, reviews = reviews, isLoading = isLoading, modifier = Modifier.padding(bottom = 16.dp)) // Separación entre tarjetas
+            FilmCard2(
+                film = film,
+                reviews = reviews,
+                isLoading = isLoading,
+                modifier = Modifier.padding(bottom = 16.dp),
+                navController = navController,
+            ) // Separación entre tarjetas
         }
     }
 }
@@ -98,7 +106,8 @@ fun FilmCard2(
     film: Film,
     reviews: List<Review>,
     isLoading: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController,
 ) {
     // Filtrar las reseñas para esta película
     val filteredReviews = remember(reviews) {
@@ -113,7 +122,11 @@ fun FilmCard2(
 
     // El Card para mostrar la información de la película
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .clickable {
+                // Al hacer clic, navegar a la pantalla de reseñas
+                navController.navigate(GhibliExplorerScreen.AdminReviews.name + "/${film.id}")
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = MaterialTheme.shapes.medium
     ) {

@@ -71,10 +71,10 @@ fun AddReviewDialog(
                     value = rating,
                     onValueChange = { rating = it },
                     valueRange = 1f..5f,
-                    steps = 4
+                    steps = 7
                 )
 
-                Text(text = "Puntuación: ${rating.toInt()}⭐")
+                Text(text = "Puntuación: ${if (rating % 1 == 0f) rating.toInt() else String.format("%.1f", rating)}⭐")
             }
         },
         confirmButton = {

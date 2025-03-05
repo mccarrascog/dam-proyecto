@@ -44,7 +44,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.ghibliexplorer.data.offline.DefaultOfflineAppContainer
 import com.example.ghibliexplorer.data.online.DefaultOnlineAppContainer
-import com.example.ghibliexplorer.data.online.FirebaseReviewRepository
 import com.example.ghibliexplorer.data.online.FirebaseUsersRepository
 import com.example.ghibliexplorer.network.FirebaseService
 import com.example.ghibliexplorer.ui.screens.AdminFilmsScreen
@@ -59,6 +58,7 @@ import com.example.ghibliexplorer.ui.screens.viewmodel.RegisterViewModel
 import com.example.ghibliexplorer.ui.screens.viewmodel.ReviewViewModel
 import com.example.ghibliexplorer.ui.screens.viewmodel.UsersViewModel
 import com.example.ghibliexplorer.ui.screens.views.AddReviewDialog
+import com.example.ghibliexplorer.ui.screens.views.AdminReviewsByFilmScreen
 import com.example.ghibliexplorer.ui.screens.views.AdminUsersScreen
 import com.example.ghibliexplorer.ui.screens.views.FilmDetailScreen
 import com.example.ghibliexplorer.ui.screens.views.LoginScreen
@@ -77,6 +77,7 @@ enum class GhibliExplorerScreen(@StringRes val titulo: Int){
     Favourites(titulo = R.string.favoritas),
     Reviews(titulo = R.string.resenias),
     AddReview(titulo = R.string.aniadir_resenia),
+    Administration(titulo = R.string.administracion),
     AdminUsers(titulo = R.string.administrar_users),
     AdminReviews(titulo = R.string.administrar_resenias)
 }
@@ -139,7 +140,6 @@ fun GhibliExplorerApp() {
 
     val appContainer = DefaultOfflineAppContainer(context)
     val offlineUsersRepository = appContainer.OfflineUsersRepository
-    val offlineFilmsRepository = appContainer.OfflineFilmsRepository
 
     val loginViewModel: LoginViewModel = remember {
         LoginViewModel(firebaseUsersRepository, offlineUsersRepository)
@@ -149,17 +149,10 @@ fun GhibliExplorerApp() {
         RegisterViewModel(offlineUsersRepository = offlineUsersRepository)  // Asegúrate de pasar el repositorio correcto
     }
 
-    val onlineFilmsRepository =
-        (LocalContext.current.applicationContext as GhibliExplorerApplication).container.onlineFilmsRepository
-
-    val filmsViewModel: FilmsViewModel = remember {
-        FilmsViewModel(onlineFilmsRepository, offlineFilmsRepository)
-    }
-
-    val firebaseReviewRepository = FirebaseReviewRepository(firebaseService)
-
-    val reviewViewModel: ReviewViewModel =
-        remember { ReviewViewModel(firebaseReviewRepository) }
+    val filmsViewModel: FilmsViewModel = viewModel(factory = FilmsViewModel.Factory)
+    val reviewViewModel: ReviewViewModel = viewModel(factory = ReviewViewModel.Factory)
+    val favsViewModel: FavsViewModel = viewModel(factory = FavsViewModel.Factory)
+    val usersViewModel: UsersViewModel = viewModel(factory = UsersViewModel.Factory)
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -182,7 +175,8 @@ fun GhibliExplorerApp() {
                     navController,
                     onClose = { scope.launch { drawerState.close() } },
                     topBarHeight = 56.dp,
-                    loginViewModel)
+                    loginViewModel,
+                    usersViewModel)
             }
         }
     ) {
@@ -255,8 +249,6 @@ fun GhibliExplorerApp() {
                             DefaultOnlineAppContainer().onlineFilmsRepository.getFilmById(filmId)
                         }
                         filmDetails?.let { film ->
-                            val context = LocalContext.current
-                            val favsViewModel: FavsViewModel = viewModel(factory = FavsViewModel.provideFactory(context))
                             LaunchedEffect(Unit) {
                                 favsViewModel.checkIsFilmInFavs(film)
                             }
@@ -314,8 +306,6 @@ fun GhibliExplorerApp() {
                 composable(route = GhibliExplorerScreen.AddReview.name + "/{filmId}") { backStackEntry ->
                     val filmId = backStackEntry.arguments?.getString("filmId") ?: return@composable
 
-
-
                     LaunchedEffect(filmId) {
                         filmsViewModel.getFilmById(filmId)
                     }
@@ -334,17 +324,42 @@ fun GhibliExplorerApp() {
                 }
 
                 composable(route = GhibliExplorerScreen.Favourites.name) {
-                    FavFilmsScreen(navController = navController)
+                    FavFilmsScreen(
+                        favsViewModel = favsViewModel,
+                        navController = navController
+                    )
                 }
-                composable("Administration") {
+
+                composable(route = GhibliExplorerScreen.Administration.name) {
                     AdministrationScreen(navController)
                 }
-                composable("AdminUsers") {
-                    val usersViewModel: UsersViewModel = viewModel()
+
+                composable(route = GhibliExplorerScreen.AdminUsers.name) {
                     AdminUsersScreen(usersViewModel)
                 }
-                composable("AdminReviews") {
+
+                composable(route = GhibliExplorerScreen.AdminReviews.name) {
                     AdminFilmsScreen(navController = navController, paddingValues = innerPadding)
+                }
+
+                composable(route = GhibliExplorerScreen.AdminReviews.name + "/{filmId}") {backStackEntry ->
+                    val filmId = backStackEntry.arguments?.getString("filmId") ?: return@composable
+
+                    LaunchedEffect(filmId) {
+                        filmsViewModel.getFilmById(filmId)
+                        reviewViewModel.loadReviews(filmId)
+                    }
+
+                    val film = filmsViewModel.selectedFilm
+
+                    if (film != null) {
+                        AdminReviewsByFilmScreen(
+                            film = film,
+                            reviewViewModel = reviewViewModel,
+                        )
+                    } else {
+                        CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+                    }
                 }
             }
         }

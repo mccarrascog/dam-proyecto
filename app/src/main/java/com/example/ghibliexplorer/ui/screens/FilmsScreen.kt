@@ -22,6 +22,7 @@ fun FilmsScreen(navController: NavController, paddingValues: PaddingValues) {
             .padding(paddingValues)
     ) {
         val filmsViewModel: FilmsViewModel = viewModel(factory = FilmsViewModel.Factory)
+
         val context = LocalContext.current
         val userEmail = getUserEmail(context)
 

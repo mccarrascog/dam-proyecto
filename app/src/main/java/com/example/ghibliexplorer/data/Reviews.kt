@@ -1,6 +1,5 @@
 package com.example.ghibliexplorer.data
 
-import androidx.room.PrimaryKey
 import java.util.Date
 import java.util.UUID
 

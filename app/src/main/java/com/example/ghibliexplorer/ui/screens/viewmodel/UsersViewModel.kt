@@ -2,8 +2,15 @@ package com.example.ghibliexplorer.ui.screens.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.ghibliexplorer.GhibliExplorerApplication
 import com.example.ghibliexplorer.data.User
+import com.example.ghibliexplorer.data.offline.OfflineUsersRepository
+import com.example.ghibliexplorer.data.online.OnlineUsersRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +18,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
-class UsersViewModel : ViewModel() {
+class UsersViewModel(
+    private val onlineUsersRepository: OnlineUsersRepository,
+    private val offlineUsersRepository: OfflineUsersRepository,
+) : ViewModel() {
+
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> get() = _users
 
@@ -26,6 +37,16 @@ class UsersViewModel : ViewModel() {
                 // Obtener usuarios desde Firestore
                 val userList = getUsersFromFirestore()
                 _users.value = userList
+
+                userList.forEach { user ->
+                    // Ejemplo de cómo insertar o actualizar usuarios en la base de datos offline
+                    val existingUser = offlineUsersRepository.getUserByEmail(user.email)
+                    if (existingUser == null) {
+                        offlineUsersRepository.insertUser(user)
+                    } else {
+                        offlineUsersRepository.updateUser(user)
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("UsersViewModel", "Error al obtener usuarios: ${e.message}")
             }
@@ -45,6 +66,52 @@ class UsersViewModel : ViewModel() {
 
             // Si el documento tiene los campos esperados, lo devolvemos con el email como ID
             user?.copy(email = email, id = UUID.randomUUID().toString()) // Asignamos un UUID para id
+        }
+    }
+
+    // Método adicional para obtener un usuario por su email desde el repositorio offline
+    suspend fun getUserByEmail(email: String): User? {
+        return offlineUsersRepository.getUserByEmail(email)
+    }
+
+    // Método para insertar un usuario en el repositorio offline
+    suspend fun insertUser(user: User) {
+        offlineUsersRepository.insertUser(user)
+    }
+
+    // Método para actualizar un usuario en el repositorio offline
+    suspend fun updateUser(user: User) {
+        offlineUsersRepository.updateUser(user)
+    }
+
+    suspend fun getUserByEmailOnline(email: String): User? {
+        return onlineUsersRepository.getUserByEmailOnline(email)
+    }
+
+    suspend fun getUsers(): List<User> {
+        return onlineUsersRepository.getUsers()
+    }
+    suspend fun getUserRole(userEmail: String): String? {
+        return onlineUsersRepository.getUserRole(userEmail)
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                // Obtener la instancia de la aplicación
+                val application = (this[APPLICATION_KEY] as GhibliExplorerApplication)
+
+                // Obtener el repositorio de películas online
+                val onlineUsersRepository = application.container.onlineUsersRepository
+
+                // Obtener el repositorio de películas offline
+                val offlineUsersRepository = application.offlineAppContainer.OfflineUsersRepository
+
+                UsersViewModel(
+                    onlineUsersRepository = onlineUsersRepository,
+                    offlineUsersRepository = offlineUsersRepository
+                )
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ class GhibliExplorerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        deleteDatabase("ghibli_favorites_db")
+        //deleteDatabase("ghibli_favorites_db")
 
         container = DefaultOnlineAppContainer()
     }

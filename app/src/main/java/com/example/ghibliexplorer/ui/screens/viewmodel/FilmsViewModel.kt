@@ -120,7 +120,7 @@ class FilmsViewModel(
 
                 FilmsViewModel(
                     onlineFilmsRepository = onlineFilmsRepository,
-                    offlineFilmsRepository = offlineFilmsRepository,
+                    offlineFilmsRepository = offlineFilmsRepository
                 )
             }
         }

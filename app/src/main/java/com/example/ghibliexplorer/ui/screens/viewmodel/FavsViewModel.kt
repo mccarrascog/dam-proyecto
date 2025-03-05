@@ -13,7 +13,9 @@ import com.example.ghibliexplorer.GhibliExplorerApplication
 import com.example.ghibliexplorer.data.FavouriteFilm
 import com.example.ghibliexplorer.data.Film
 import com.example.ghibliexplorer.data.User
-import com.example.ghibliexplorer.data.offline.OfflineAppContainer
+import com.example.ghibliexplorer.data.offline.OfflineFilmsRepository
+import com.example.ghibliexplorer.data.offline.OfflineUsersRepository
+import com.example.ghibliexplorer.data.online.OnlineUsersRepository
 import com.example.ghibliexplorer.utils.getUserEmail
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -28,18 +30,21 @@ sealed interface FavFilmsUiState {
     object Loading : FavFilmsUiState
 }
 
-class FavsViewModel(private val appContainer: OfflineAppContainer, context: Context) : ViewModel() {
-
+class FavsViewModel(
+    private val offlineUsersRepository: OfflineUsersRepository,
+    private val offlineFilmsRepository: OfflineFilmsRepository,
+    context: Context,
+) : ViewModel() {
     var favFilmsUiState: FavFilmsUiState by mutableStateOf(FavFilmsUiState.Loading)
         private set
 
     private var loggedUser: User? = null
-
     init {
         viewModelScope.launch {
             val userEmail = getUserEmail(context)
+            Log.d("FavsViewModel", "Buscando usuario con email: $userEmail")
             if (userEmail != null) {
-                loggedUser = appContainer.OfflineUsersRepository.getUserByEmail(userEmail)
+                loggedUser = offlineUsersRepository.getUserByEmail(userEmail)
                 if (loggedUser == null) {
                     favFilmsUiState = FavFilmsUiState.Error
                     Log.e("FavsViewModel", "No se encontró al usuario con email: $userEmail")
@@ -61,7 +66,7 @@ class FavsViewModel(private val appContainer: OfflineAppContainer, context: Cont
                 Log.d("FavsViewModel", "Cargando favoritos para el usuario: $userId")
 
                 // Aquí actualizamos el estado con la lista de favoritos en forma de Flow
-                val favFilmsFlow = appContainer.OfflineFilmsRepository.getAllFavouriteFilmsByUser(userId)
+                val favFilmsFlow = offlineFilmsRepository.getAllFavouriteFilmsByUser(userId)
                 favFilmsUiState = FavFilmsUiState.Success(favFilmsFlow)
                 Log.d("FavsViewModel", "Favoritos cargados correctamente")
             } catch (e: IOException) {
@@ -76,7 +81,7 @@ class FavsViewModel(private val appContainer: OfflineAppContainer, context: Cont
         viewModelScope.launch {
             try {
                 val favouriteFilm = FavouriteFilm(userId = userId, filmId = film.id) // Crear el objeto correcto
-                appContainer.OfflineFilmsRepository.deleteFromFavourites(favouriteFilm) // Pasar FavouriteFilm
+                offlineFilmsRepository.deleteFromFavourites(favouriteFilm) // Pasar FavouriteFilm
                 Log.d("FavsViewModel", "Película eliminada de favoritos: ${film.title}")
                 getFavFilms() // Actualizar lista de favoritos después de eliminar la película
             } catch (e: Exception) {
@@ -92,7 +97,7 @@ class FavsViewModel(private val appContainer: OfflineAppContainer, context: Cont
         viewModelScope.launch {
             try {
                 val favouriteFilm = FavouriteFilm(userId = userId, filmId = film.id) // Crear objeto correcto
-                appContainer.OfflineFilmsRepository.addToFavourites(favouriteFilm) // Guardar en favoritos
+                offlineFilmsRepository.addToFavourites(favouriteFilm) // Guardar en favoritos
                 Log.d("FavsViewModel", "Película añadida a favoritos: ${film.title}")
                 getFavFilms() // Actualizar lista de favoritos después de añadir la película
             } catch (e: Exception) {
@@ -110,7 +115,7 @@ class FavsViewModel(private val appContainer: OfflineAppContainer, context: Cont
         val userId = loggedUser?.id ?: return
         viewModelScope.launch {
             try {
-                appContainer.OfflineFilmsRepository.isFilmInFavs(film.id, userId).collect {
+                offlineFilmsRepository.isFilmInFavs(film.id, userId).collect {
                     _isFilmInFavsState.value = it
                     Log.d("FavsViewModel", "Comprobación si la película está en favoritos: ${film.title} - $it")
                 }
@@ -121,11 +126,26 @@ class FavsViewModel(private val appContainer: OfflineAppContainer, context: Cont
     }
 
     companion object {
-        fun provideFactory(context: Context): ViewModelProvider.Factory = viewModelFactory {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
+                // Obtener la instancia de la aplicación
                 val application = (this[APPLICATION_KEY] as GhibliExplorerApplication)
-                val appContainer = application.offlineAppContainer
-                FavsViewModel(appContainer = appContainer, context = context)
+
+                // Obtener el repositorio de películas online
+                val onlineUsersRepository = application.container.onlineUsersRepository
+
+                // Obtener el repositorio de películas offline
+                val offlineUsersRepository = application.offlineAppContainer.OfflineUsersRepository
+
+                // Obtener el repositorio de películas offline
+                val offlineFilmsRepository = application.offlineAppContainer.OfflineFilmsRepository
+
+                // Aquí accedemos a 'context' directamente desde el 'initializer'
+                FavsViewModel(
+                    offlineUsersRepository,
+                    offlineFilmsRepository,
+                    context = this[APPLICATION_KEY] as Context
+                )
             }
         }
     }
